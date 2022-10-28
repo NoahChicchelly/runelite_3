@@ -36,6 +36,7 @@ import net.runelite.api.Item;
 import static net.runelite.api.ItemID.*;
 import static net.runelite.api.MenuAction.RUNELITE_OVERLAY;
 import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.cluescrolls.clues.ClueScroll;
 import net.runelite.client.plugins.cluescrolls.clues.item.AnyRequirementCollection;
 import net.runelite.client.plugins.cluescrolls.clues.item.ItemRequirement;
@@ -89,6 +90,11 @@ public class ClueScrollOverlay extends OverlayPanel
 
 	private final ClueScrollPlugin plugin;
 	private final Client client;
+	public boolean customHint;
+	private static final String CONFIG_GROUP = "clueScroll";
+
+	@Inject
+	private ConfigManager configManager;
 
 	@Inject
 	private ClueScrollOverlay(ClueScrollPlugin plugin, Client client)
@@ -99,6 +105,7 @@ public class ClueScrollOverlay extends OverlayPanel
 		setPriority(OverlayPriority.LOW);
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "Clue Scroll overlay"));
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "Clue Scroll overlay"));
+		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Edit Hint", "Clue Scroll overlay"));
 	}
 
 	@Override
@@ -141,6 +148,14 @@ public class ClueScrollOverlay extends OverlayPanel
 				.left(clue.getEnemy().getText())
 				.leftColor(Color.YELLOW)
 				.build());
+		}
+
+		if(customHint)
+		{
+			if (configManager.getConfiguration(CONFIG_GROUP, clue.toString()) != null)
+			{
+				panelComponent.getChildren().add(LineComponent.builder().left(configManager.getConfiguration(CONFIG_GROUP, clue.toString()).replaceAll("\"", "")).leftColor(Color.CYAN).build());
+			}
 		}
 
 		return super.render(graphics);

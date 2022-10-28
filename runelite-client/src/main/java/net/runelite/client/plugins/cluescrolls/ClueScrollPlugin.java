@@ -27,6 +27,7 @@
 package net.runelite.client.plugins.cluescrolls;
 
 import com.google.common.base.MoreObjects;
+import com.google.gson.Gson;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import java.awt.Color;
@@ -94,6 +95,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
@@ -124,6 +126,7 @@ import net.runelite.client.plugins.cluescrolls.clues.item.ItemRequirement;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.OverlayUtil;
+import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TextComponent;
 import net.runelite.client.ui.overlay.worldmap.WorldMapPointManager;
 import net.runelite.client.util.ImageUtil;
@@ -139,6 +142,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Slf4j
 public class ClueScrollPlugin extends Plugin
 {
+	protected final PanelComponent panelComponent = new PanelComponent();
 	private static final Color HIGHLIGHT_BORDER_COLOR = Color.ORANGE;
 	private static final Color HIGHLIGHT_HOVER_BORDER_COLOR = HIGHLIGHT_BORDER_COLOR.darker();
 	private static final Color HIGHLIGHT_FILL_COLOR = new Color(0, 255, 0, 20);
@@ -188,6 +192,15 @@ public class ClueScrollPlugin extends Plugin
 	private ClueScrollEmoteOverlay clueScrollEmoteOverlay;
 
 	@Inject
+	private ChatboxPanelManager chatboxPanelManager;
+
+	@Inject
+	private Gson gson;
+
+	@Inject
+	private ConfigManager configManager;
+
+	@Inject
 	private ClueScrollMusicOverlay clueScrollMusicOverlay;
 
 	@Inject
@@ -210,6 +223,7 @@ public class ClueScrollPlugin extends Plugin
 	private BufferedImage mapArrow;
 	private Integer clueItemId;
 	private boolean worldMapPointsSet = false;
+	private static final String CONFIG_GROUP = "clueScroll";
 
 	// Some objects will only update to their "active" state when changing to their plane after varbit changes,
 	// which take one extra tick to fire after the plane change. These fields are used to track those changes and delay
@@ -315,6 +329,25 @@ public class ClueScrollPlugin extends Plugin
 			&& overlayMenuClicked.getOverlay() == clueScrollOverlay)
 		{
 			resetClue(true);
+		}
+		if (overlayMenuEntry.getMenuAction() == MenuAction.RUNELITE_OVERLAY
+				&& overlayMenuClicked.getEntry().getOption().equals("Edit Hint")
+				&& overlayMenuClicked.getOverlay() == clueScrollOverlay)
+		{
+			clueScrollOverlay.customHint = true;
+			chatboxPanelManager.openTextInput("Hint Text")
+					.value("")
+					.onDone((input) ->
+					{
+						input = com.google.common.base.Strings.emptyToNull(input);
+						if (input == null)
+						{
+							input = "";
+						}
+						String json = gson.toJson(input);
+						configManager.setConfiguration(CONFIG_GROUP, clue.toString(), json);
+					})
+					.build();
 		}
 	}
 
