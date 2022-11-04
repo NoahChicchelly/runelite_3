@@ -174,7 +174,7 @@ public class ClueScrollOverlay extends OverlayPanel
 			}
 			else if (configManager.getConfiguration(CONFIG_GROUP, clue.toString()) != null)
 			{
-				panelComponent.getChildren().add(LineComponent.builder().left(configManager.getConfiguration(CONFIG_GROUP, clue.getNameConfig()).replaceAll("\"", "")).leftColor(Color.CYAN).build());
+				panelComponent.getChildren().add(LineComponent.builder().left(configManager.getConfiguration(CONFIG_GROUP, clue.toString()).replaceAll("\"", "")).leftColor(Color.CYAN).build());
 			}
 		}
 
