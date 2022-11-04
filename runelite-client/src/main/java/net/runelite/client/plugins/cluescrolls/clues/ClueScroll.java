@@ -50,6 +50,9 @@ public abstract class ClueScroll
 	@Getter(AccessLevel.PUBLIC)
 	private Enemy enemy;
 
+	@Getter(AccessLevel.PUBLIC)
+	private String nameConfig;
+
 	public abstract void makeOverlayHint(PanelComponent panelComponent, ClueScrollPlugin plugin);
 
 	public abstract void makeWorldOverlayHint(Graphics2D graphics, ClueScrollPlugin plugin);

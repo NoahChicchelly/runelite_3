@@ -38,6 +38,7 @@ import static net.runelite.api.MenuAction.RUNELITE_OVERLAY;
 import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.cluescrolls.clues.ClueScroll;
+import net.runelite.client.plugins.cluescrolls.clues.ThreeStepCrypticClue;
 import net.runelite.client.plugins.cluescrolls.clues.item.AnyRequirementCollection;
 import net.runelite.client.plugins.cluescrolls.clues.item.ItemRequirement;
 import static net.runelite.client.plugins.cluescrolls.clues.item.ItemRequirements.item;
@@ -105,7 +106,16 @@ public class ClueScrollOverlay extends OverlayPanel
 		setPriority(OverlayPriority.LOW);
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "Clue Scroll overlay"));
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Reset", "Clue Scroll overlay"));
-		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Edit Hint", "Clue Scroll overlay"));
+		if ( plugin.getClue() instanceof ThreeStepCrypticClue )
+		{
+			getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Edit Hint 1", "Clue Scroll overlay"));
+			getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Edit Hint 2", "Clue Scroll overlay"));
+			getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Edit Hint 3", "Clue Scroll overlay"));
+		}
+		else
+		{
+			getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY, "Edit Hint", "Clue Scroll overlay"));
+		}
 	}
 
 	@Override
@@ -152,9 +162,19 @@ public class ClueScrollOverlay extends OverlayPanel
 
 		if(customHint)
 		{
-			if (configManager.getConfiguration(CONFIG_GROUP, clue.toString()) != null)
+			if (clue instanceof ThreeStepCrypticClue)
 			{
-				panelComponent.getChildren().add(LineComponent.builder().left(configManager.getConfiguration(CONFIG_GROUP, clue.toString()).replaceAll("\"", "")).leftColor(Color.CYAN).build());
+				int i = 0;
+				while (i < 3) {
+					if (configManager.getConfiguration(CONFIG_GROUP, plugin.threeStep.get(i).toString()) != null) {
+						panelComponent.getChildren().add(LineComponent.builder().left(configManager.getConfiguration(CONFIG_GROUP, plugin.threeStep.get(i).toString()).replaceAll("\"", "")).leftColor(Color.CYAN).build());
+					}
+					i++;
+				}
+			}
+			else if (configManager.getConfiguration(CONFIG_GROUP, clue.toString()) != null)
+			{
+				panelComponent.getChildren().add(LineComponent.builder().left(configManager.getConfiguration(CONFIG_GROUP, clue.getNameConfig()).replaceAll("\"", "")).leftColor(Color.CYAN).build());
 			}
 		}
 

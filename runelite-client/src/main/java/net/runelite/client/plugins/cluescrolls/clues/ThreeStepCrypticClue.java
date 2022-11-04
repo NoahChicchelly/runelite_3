@@ -62,13 +62,16 @@ public class ThreeStepCrypticClue extends ClueScroll implements TextClueScroll, 
 
 			for (CrypticClue clue : CrypticClue.CLUES)
 			{
-				if (!rawText.equalsIgnoreCase(clue.getText()))
-				{
-					continue;
+//				if (!rawText.equalsIgnoreCase(clue.getText()))
+//				{
+//					continue;
+//				}
+				if (steps.size() == 3) {
+					break;
+				} else {
+					steps.add(new AbstractMap.SimpleEntry<>(clue, isDone));
 				}
-
-				steps.add(new AbstractMap.SimpleEntry<>(clue, isDone));
-				break;
+//				break;
 			}
 		}
 

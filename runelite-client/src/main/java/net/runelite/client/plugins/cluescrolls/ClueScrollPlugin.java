@@ -36,11 +36,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -97,6 +94,7 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.chatbox.ChatboxTextInput;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -224,6 +222,10 @@ public class ClueScrollPlugin extends Plugin
 	private Integer clueItemId;
 	private boolean worldMapPointsSet = false;
 	private static final String CONFIG_GROUP = "clueScroll";
+	public List threeStep = new ArrayList();
+	public Object threeStep1;
+	public Object threeStep2;
+	public Object threeStep3;
 
 	// Some objects will only update to their "active" state when changing to their plane after varbit changes,
 	// which take one extra tick to fire after the plane change. These fields are used to track those changes and delay
@@ -331,23 +333,43 @@ public class ClueScrollPlugin extends Plugin
 			resetClue(true);
 		}
 		if (overlayMenuEntry.getMenuAction() == MenuAction.RUNELITE_OVERLAY
-				&& overlayMenuClicked.getEntry().getOption().equals("Edit Hint")
+				&& overlayMenuClicked.getEntry().getOption().equals("Edit Hint 1")
 				&& overlayMenuClicked.getOverlay() == clueScrollOverlay)
 		{
 			clueScrollOverlay.customHint = true;
-			chatboxPanelManager.openTextInput("Hint Text")
-					.value("")
-					.onDone((input) ->
-					{
-						input = com.google.common.base.Strings.emptyToNull(input);
-						if (input == null)
+			if (clue instanceof ThreeStepCrypticClue)
+			{
+				chatboxPanelManager.openTextInput("Hint Text 1")
+						.value("")
+						.onDone((input) ->
 						{
-							input = "";
-						}
-						String json = gson.toJson(input);
-						configManager.setConfiguration(CONFIG_GROUP, clue.toString(), json);
-					})
-					.build();
+							input = com.google.common.base.Strings.emptyToNull(input);
+							if (input == null)
+							{
+								input = "";
+							}
+							String json = gson.toJson(input);
+							configManager.setConfiguration(CONFIG_GROUP, threeStep1.toString(), json);
+						})
+						.build();
+			}
+			else if (
+				overlayMenuClicked.getEntry().getOption().equals("Edit Hint")
+				&& overlayMenuClicked.getOverlay() == clueScrollOverlay)
+			{
+				chatboxPanelManager.openTextInput("Hint Text")
+						.value("")
+						.onDone((input) ->
+						{
+							input = com.google.common.base.Strings.emptyToNull(input);
+							if (input == null) {
+								input = "";
+							}
+							String json = gson.toJson(input);
+							configManager.setConfiguration(CONFIG_GROUP, clue.toString(), json);
+						})
+						.build();
+			}
 		}
 	}
 
@@ -871,6 +893,17 @@ public class ClueScrollPlugin extends Plugin
 
 		if (threeStepCrypticClue != null)
 		{
+			int i = 0;
+			List<Map.Entry<CrypticClue, Boolean>> threeSteps = threeStepCrypticClue.getClueSteps();
+			while (i < 3) {
+				String temp = threeSteps.get(i).getKey().getText();
+				ClueScroll temp2 = findClueScroll(temp);
+				threeStep.add(temp2);
+				i++;
+			}
+			threeStep1 = threeStep.get(0);
+			threeStep2 = threeStep.get(1);
+			threeStep3 = threeStep.get(2);
 			return threeStepCrypticClue;
 		}
 
